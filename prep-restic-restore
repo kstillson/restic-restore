@@ -1,4 +1,5 @@
-# Ken Stillson (cc) 20 April, 2019
+# Ken Stillson 20 April, 2019
+# GNU General Public License v3.0
 #
 # Prep a restic/rclone restoration environment.
 # Intended to be transferred to an Ubuntu live-boot (16.04 or higher).
