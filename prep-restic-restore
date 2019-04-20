@@ -1,0 +1,54 @@
+# Ken Stillson (cc) 20 April, 2019
+#
+# Prep a restic/rclone restoration environment.
+# Intended to be transferred to an Ubuntu live-boot (16.04 or higher).
+
+# exports variables for the current shell to use, so must be run
+# via the ". prep-restic-restore"
+
+cd /root
+
+# Do interactive exchange first...
+if [[ -z "${RESTIC_PASSWORD}" ]]; then
+  echo "setting up environment..."
+  read -s -p "restic and rclone config password: " x
+  export RESTIC_PASSWORD="${x}"
+  export RCLONE_CONFIG_PASS="${x}"
+  export RESTIC_REPOSITORY="rclone:allthebits:restic"
+fi
+
+if [[ ! -x /root/rclone ]]; then
+  echo "installing rclone..."
+  wget -O rclone.zip https://downloads.rclone.org/v1.47.0/rclone-v1.47.0-linux-amd64.zip
+  unzip rclone.zip
+  mv rclone-*/rclone .
+  cd /usr/bin
+  ln -s /root/rclone
+  cd /root
+fi
+
+if [[ ! -x /root/restic ]]; then
+  echo "installing restic"
+  wget -O /root/restic.bz2 https://github.com/restic/restic/releases/download/v0.9.4/restic_0.9.4_linux_amd64.bz2
+  bunzip2 /root/restic.bz2
+  chmod +x /root/restic
+  cd /usr/bin
+  ln -s /root/restic
+  cd /root
+fi
+
+if [[ ! -r /root/.config/rclone/rclone.conf ]]; then
+  echo "installing rclone config"
+  mkdir -p /root/.config/rclone
+  cat > /root/.config/rclone/rclone.conf << EOF
+# Encrypted rclone configuration File
+
+RCLONE_ENCRYPT_V0:
+8dPkVXsiOIGFeioGLnPZsp7wjX11DDUChQmDqnmZjqJYBqa85EhcG3m0lOjGm/zwi6irQtv354zhfvI5m7qmqUHmlI50aQ19AZyNH5iEzFUTPSkdfN/rBEMwC6S4UFlx4pxxALqe2lN6/L74cu4n3coWZCHGIZR1f42uolFEeDTqFglxYo9aLSW/3zSQOW4MmH0/hmOH93z1Iuo5uzR/Bt9N4AJ4ZLo7LMqUWX59g806Ci0o9ABz8EzfQDUuskBS8Oys/CqhCtwHpgtrKqE3ShrJh5DVID5eNSjBoyenlYNbgZvwoa4lLJO2sb+3noGnt0SJVOGEPTe+fALt5F0tutulokHMMc4SzfdYpMm3W2qBnI7MPm4kwCZ6npSp1K2NadEemZT8QrKkZffw38YpYIafWvUCTGl2NaFljUDpDuVUOE4WK5aiqJ9wsSgpKuPi1V96WanqDoZzttgHvm7Q5CwGFtmx9BN1PTKXp2fL5Xl5tVR+7d5E47m5pLWY0G4myLEKt4T6n0EEVS4NtUU1jLeNW6jnp3ivhAJICZ2XjUr0vx72SGHctvXjKtXuwsNDjoOT9sXNr2TN9CWoknYpocDdzHV0mXSCqx5NGNqvLpdomnCyX3gN6my0wh794w3l/7ZQZ1oZppH5J+hpqiQBhlLHFLfiExhc5Ytcb1ueODOBazQX+ndMTsYCbCDO8oCkqkGGFoPiqjDex0Y2SfPnbTbIT76lAxTYo3UjJ98TitIFs35xboKIrrQjdgzzUglG7ia7K0wJEC9PTIEr1FPbGGl5wBz471fX+Q0U2EriIPE/JdNbw5+6EuLW3n/ZIq7oo+h8LC7fhuT5ghCgBSK2h+lRtC/KpH3fKfJ+wOrwJKplq/yumnZJd6oZ30iK3VJeaCRFjeAmfEZ+NyW5mhSBEbmGBEr/P/h8lwczOV/kylSEyfS2FqjVrlI0GGdaww2vNzDxQ0Tgaw0TYT77ziJtOstjiRsyVQzh64/UCxbTa1STPs5OPPDshLJTQf8AafWfAkI2KKmUjt9MDf93n2LVmlpE2no0ujcJPM70NQ+Vk04iO0O19h7ACMcg+XCGx53/UNkTGEarTOP8D10WhIHmJkUATcUOFwv1iOYDisYT+bysCnHjnBSH7Jw2EYvwCz3tnPlg52HvUBtZ/UfZBLTXbuLQp5k7r+sWjE2dn/qO4MzUcAcBY5b5HXsoNCSNPTiqvI7H2mLgUfOh+Guxn4GhzxewCSKL2Y4J986cMh2a7VEWZXU00xj5y5Y96QR7dFKv7mJEpnL4ugssMrG01di6PKdrkGMwNq/WouWBqY+7su0QOEWtLE7pqLrnAwyYgfJiQARV14+dd766nFrXFf/xcB19yLTqna7zgfH7UiXQz0yUFsR3qqFt64ShmFhZ9rwVGRTASKY9TbGNGxRb1xVfp3MtkQCBmo87oDiAFyhP7HbTWWQGxdDdRqrpnwaZkI2rhVEyMPsM2eNRkejrIQUIjKiwoAlQkocm2qF94/mVHk/hMnCp2CX2y9kBrBf4GK/24M49hIeeH1TUm1753qwKyXUOo3Q/AoPSqdNtjbTnLQh0+N9Inukq+PrSvRz5A/+As+/Hzsg1Px2Dpp10DiAuEjpP+4qahpiJYR972Q/VscMP+Yeaupcyppg2Vf7iWnmXHJH30gvt1zofCME8jyyExDA821Fg3xJm9qkgqUQSr40/mGQS09Z6u129hRMBpHOapeu5Hnspx8FvfqMN6Ncs6fNlR74iKMXYKqwDjNA7rkolkHU/dTnappNKnSwNdKjsozJWTHji4/hEldc/uRrJaSo+/8V/4D8Q1UtJCkr7ao1k8M3/l0dyTL8dArlP9uUAj2PrMEt6J9ifo3o1tbRFVCB9fx4i6ki1ew00Sz9TwRYQD/ZoaIg80ZENpR5WqYk5vtMa0JOw+vOU70ga2jZgjlIRabk6sEcZhGONYFVHHvj1wBF7uRlnA/4kGk3rIMhh6uigxWb2Bplh2W/F7AiBvKzyQtS3V9c2Q0AdI5AajAwuzjpioeOWnfBWRsCB+s0NaBdjVDu56TbMuEKJPbfRt6mODgoK9nQ1NHBxcbkRJKAOAjoXf01DI6REmk1S/lumJ7xm3oKtBJfgdxQfWNT14412NPqWv/+bH8mA+tnZHl+U2RRKMc45XGVMawzXXjN3SK2hpcNq3HG/nBYIJuuVlJdPeXs0gV/dwBKEJxUx+G4G6ZRm+GoPz27+6XO+1rcsrM4BNfleVS6SaSZinI/+FWZ32pik2Xkah6pvurbolmLQGCmQ4kgWZjyM00CIkfNQrNuz/48sIXNk+EKEPDctqC8qSYXJH9xDmAc0ENq1x1vn9aYpr/lkdhZW98wrijJFWmGvsxAhSW/QT0GfWqR9zZFQBbIbWhpVIlOGuVklrNNHUMFIRMoqMtmSXjtx/smkGR43UaTVaqjfMZ6YSlzyewCbs9tOY4DBtHilCmy9JKEr9/yPqkb6IGSVi2/X9a77qbtDVHZUMHeqps/7qjW5kgNocwjQUAFBMCT6R9T4DyeaGRF/wA2248lyCqNIl4pkukuMXtyuAPx7
+EOF
+fi
+
+# Perform a snapshot list retrieval to test that things are working.
+echo ""
+echo "restic snapshots:"
+restic snapshots
